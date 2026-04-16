@@ -25,8 +25,8 @@ public record IndexDataUpdateRequest(
     Long tradingQuantity,
 
     @PositiveOrZero
-    Long tradingPrice,
+    BigDecimal tradingPrice,
 
     @PositiveOrZero
-    Long marketTotalAmount
+    BigDecimal marketTotalAmount
 ) {}

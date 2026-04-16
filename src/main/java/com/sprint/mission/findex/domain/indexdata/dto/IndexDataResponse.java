@@ -21,23 +21,4 @@ public record IndexDataResponse (
     Long tradingQuantity,
     BigDecimal tradingPrice,
     BigDecimal marketTotalAmount
-) {
-
-  public static IndexDataResponse from(IndexData indexData) {
-    return new IndexDataResponse(
-        indexData.getId(),
-        indexData.getIndexInfo().getId(),
-        indexData.getBaseDate(),
-        indexData.getSourceType(),
-        indexData.getMarketPrice(),
-        indexData.getClosingPrice(),
-        indexData.getHighPrice(),
-        indexData.getLowPrice(),
-        indexData.getVersus(),
-        indexData.getFluctuationRate(),
-        indexData.getTradingQuantity(),
-        indexData.getTradingPrice(),
-        indexData.getMarketTotalAmount()
-        );
-  }
-}
+) {}

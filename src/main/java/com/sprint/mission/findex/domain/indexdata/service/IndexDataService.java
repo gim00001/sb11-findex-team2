@@ -4,14 +4,17 @@ import com.sprint.mission.findex.domain.indexdata.dto.IndexDataCreateRequest;
 import com.sprint.mission.findex.domain.indexdata.dto.IndexDataResponse;
 import com.sprint.mission.findex.domain.indexdata.dto.IndexDataUpdateRequest;
 import com.sprint.mission.findex.domain.indexdata.entity.IndexData;
+import com.sprint.mission.findex.domain.indexdata.mapper.IndexDataMapper;
 import com.sprint.mission.findex.domain.indexdata.repository.IndexDataRepository;
 import com.sprint.mission.findex.domain.indexinfo.entity.IndexInfo;
+import com.sprint.mission.findex.domain.indexinfo.entity.IndexInfo.SourceType;
 import com.sprint.mission.findex.domain.indexinfo.repository.IndexInfoRepository;
 import com.sprint.mission.findex.global.exception.ApiException;
 import com.sprint.mission.findex.global.exception.ApiException.ERROR;
 import jakarta.transaction.Transactional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -20,6 +23,7 @@ public class IndexDataService {
 
   private final IndexDataRepository indexDataRepository;
   private final IndexInfoRepository indexInfoRepository;
+  private final IndexDataMapper indexDataMapper;
 
   @Transactional
   public IndexDataResponse create(IndexDataCreateRequest request) {
@@ -33,7 +37,7 @@ public class IndexDataService {
     IndexData indexData = IndexData.builder()
         .indexInfo(indexInfo)
         .baseDate(request.baseDate())
-        .sourceType(request.sourceType())
+        .sourceType(request.sourceType() != null ? request.sourceType() : SourceType.USER)
         .marketPrice(request.marketPrice())
         .closingPrice(request.closingPrice())
         .highPrice(request.highPrice())
@@ -45,7 +49,11 @@ public class IndexDataService {
         .marketTotalAmount(request.marketTotalAmount())
         .build();
 
-    return IndexDataResponse.from(indexDataRepository.save(indexData));
+    try {
+      return indexDataMapper.toResponse(indexDataRepository.save(indexData));
+    } catch (DataIntegrityViolationException e) {
+      throw new ApiException(ERROR.INDEX_DATA_DUPLICATED);
+    }
   }
 
   @Transactional
@@ -62,11 +70,10 @@ public class IndexDataService {
         request.fluctuationRate(),
         request.tradingQuantity(),
         request.tradingPrice(),
-        request.marketTotalAmount(),
-        request.sourceType()
+        request.marketTotalAmount()
     );
 
-    return IndexDataResponse.from(indexData);
+    return indexDataMapper.toResponse(indexData);
   }
 
   @Transactional

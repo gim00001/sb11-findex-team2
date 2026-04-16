@@ -1,39 +1,32 @@
 package com.sprint.mission.findex.domain.indexdata.dto;
 
-import com.sprint.mission.findex.domain.indexinfo.entity.IndexInfo.SourceType;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
 import java.math.BigDecimal;
 
-public record IndexDataUpdateRequest (
+public record IndexDataUpdateRequest(
 
-    @NotNull
-    SourceType sourceType,
-
-    @NotNull
+    @PositiveOrZero
     BigDecimal marketPrice,
 
-    @NotNull
+    @PositiveOrZero
     BigDecimal closingPrice,
 
-    @NotNull
+    @PositiveOrZero
     BigDecimal highPrice,
 
-    @NotNull
+    @PositiveOrZero
     BigDecimal lowPrice,
 
-    @NotNull
     BigDecimal versus,
 
-    @NotNull
     BigDecimal fluctuationRate,
 
-    @NotNull
+    @PositiveOrZero
     Long tradingQuantity,
 
-    @NotNull
-    BigDecimal tradingPrice,
+    @PositiveOrZero
+    Long tradingPrice,
 
-    @NotNull
-    BigDecimal marketTotalAmount
-
+    @PositiveOrZero
+    Long marketTotalAmount
 ) {}

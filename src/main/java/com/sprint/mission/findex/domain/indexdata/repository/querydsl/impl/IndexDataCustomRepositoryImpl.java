@@ -42,7 +42,10 @@ public class IndexDataCustomRepositoryImpl implements IndexDataCustomRepository 
             loeEndDate(request.endDate()),
             cursorCondition(sortField, request.cursor(), request.idAfter(), asc)
         )
-        .orderBy(sortOrder(sortField, asc), indexData.id.asc())
+        .orderBy(
+        sortOrder(sortField, asc),
+        asc ? indexData.id.asc() : indexData.id.desc()
+    )
         .limit(size + 1)
         .fetch();
 

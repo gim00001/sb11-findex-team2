@@ -1,5 +1,6 @@
 package com.sprint.mission.findex.domain.indexdata.controller;
 
+import com.sprint.mission.findex.domain.indexdata.controller.api.IndexDataApi;
 import com.sprint.mission.findex.domain.indexdata.dto.IndexDataCreateRequest;
 import com.sprint.mission.findex.domain.indexdata.dto.IndexDataListRequest;
 import com.sprint.mission.findex.domain.indexdata.dto.IndexDataResponse;
@@ -24,7 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/index-data")
 @RequiredArgsConstructor
-public class IndexDataController {
+public class IndexDataController implements IndexDataApi {
 
   private final IndexDataService indexDataService;
 

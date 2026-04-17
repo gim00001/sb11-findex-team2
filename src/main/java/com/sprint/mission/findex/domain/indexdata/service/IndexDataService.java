@@ -93,6 +93,9 @@ public class IndexDataService {
         && request.startDate().isAfter(request.endDate())) {
       throw new ApiException(ERROR.COMMON_INVALID_REQUEST);
     }
+    if ((request.cursor() == null) != (request.idAfter() == null)) {
+      throw new ApiException(ERROR.COMMON_INVALID_REQUEST);
+    }
     CursorPageResponse<IndexData> result = indexDataRepository.findAll(request);
     List<IndexDataResponse> content = result.content().stream()
         .map(indexDataMapper::toResponse)

@@ -20,10 +20,14 @@ public class IndexDataCustomRepositoryImpl implements IndexDataCustomRepository 
 
   private final JPAQueryFactory queryFactory;
   private final QIndexData indexData = QIndexData.indexData;
+  private static final int DEFAULT_PAGE_SIZE = 10;
+  private static final int MAX_PAGE_SIZE = 100;
 
   @Override
   public CursorPageResponse<IndexData> findAll(IndexDataListRequest request) {
-    int size = (request.size() != null && request.size() > 0) ? request.size() : 10;
+    int size = (request.size() != null && request.size() > 0)
+        ? Math.min(request.size(), MAX_PAGE_SIZE)   // ← 수정
+        : DEFAULT_PAGE_SIZE;
 
     List<IndexData> content = queryFactory
         .selectFrom(indexData)

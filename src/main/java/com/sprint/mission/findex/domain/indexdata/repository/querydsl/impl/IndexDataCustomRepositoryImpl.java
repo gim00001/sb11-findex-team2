@@ -8,6 +8,7 @@ import com.sprint.mission.findex.domain.indexdata.entity.IndexData;
 import com.sprint.mission.findex.domain.indexdata.entity.QIndexData;
 import com.sprint.mission.findex.domain.indexdata.repository.querydsl.IndexDataCustomRepository;
 import com.sprint.mission.findex.global.common.dto.CursorPageResponse;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -18,16 +19,20 @@ import org.springframework.stereotype.Repository;
 @RequiredArgsConstructor
 public class IndexDataCustomRepositoryImpl implements IndexDataCustomRepository {
 
-  private final JPAQueryFactory queryFactory;
-  private final QIndexData indexData = QIndexData.indexData;
   private static final int DEFAULT_PAGE_SIZE = 10;
   private static final int MAX_PAGE_SIZE = 100;
+
+  private final JPAQueryFactory queryFactory;
+  private final QIndexData indexData = QIndexData.indexData;
 
   @Override
   public CursorPageResponse<IndexData> findAll(IndexDataListRequest request) {
     int size = (request.size() != null && request.size() > 0)
-        ? Math.min(request.size(), MAX_PAGE_SIZE)   // ← 수정
+        ? Math.min(request.size(), MAX_PAGE_SIZE)
         : DEFAULT_PAGE_SIZE;
+
+    boolean asc = !"desc".equalsIgnoreCase(request.sortDirection());
+    String sortField = request.sortField() != null ? request.sortField() : "baseDate";
 
     List<IndexData> content = queryFactory
         .selectFrom(indexData)
@@ -35,24 +40,17 @@ public class IndexDataCustomRepositoryImpl implements IndexDataCustomRepository 
             eqIndexInfoId(request.indexInfoId()),
             goeStartDate(request.startDate()),
             loeEndDate(request.endDate()),
-            cursorCondition(request.idAfter())
+            cursorCondition(sortField, request.cursor(), request.idAfter(), asc)
         )
-        .orderBy(getOrderSpecifier(request.sortField(), request.sortDirection()))
+        .orderBy(sortOrder(sortField, asc), indexData.id.asc())
         .limit(size + 1)
         .fetch();
 
     boolean hasNext = content.size() > size;
-    if (hasNext) {
-      content = content.subList(0, size);
-    }
+    List<IndexData> result = hasNext ? content.subList(0, size) : content;
 
-    UUID nextCursor = null;
-    UUID nextIdAfter = null;
-    if (hasNext && !content.isEmpty()) {
-      IndexData last = content.get(content.size() - 1);
-      nextCursor = last.getId();
-      nextIdAfter = last.getId();
-    }
+    String nextCursor = hasNext ? extractCursor(sortField, result.get(result.size() - 1)) : null;
+    UUID nextIdAfter = hasNext ? result.get(result.size() - 1).getId() : null;
 
     Long totalElements = queryFactory
         .select(indexData.count())
@@ -64,7 +62,7 @@ public class IndexDataCustomRepositoryImpl implements IndexDataCustomRepository 
         )
         .fetchOne();
 
-    return CursorPageResponse.of(content, nextCursor, nextIdAfter, size, totalElements, hasNext);
+    return CursorPageResponse.of(result, nextCursor, nextIdAfter, size, totalElements, hasNext);
   }
 
   private BooleanExpression eqIndexInfoId(UUID indexInfoId) {
@@ -79,23 +77,100 @@ public class IndexDataCustomRepositoryImpl implements IndexDataCustomRepository 
     return endDate != null ? indexData.baseDate.loe(endDate) : null;
   }
 
-  private BooleanExpression cursorCondition(UUID idAfter) {
-    return idAfter != null ? indexData.id.gt(idAfter) : null;
+  private BooleanExpression cursorCondition(
+      String sortField, String cursor, UUID idAfter, boolean asc) {
+    if (cursor == null || idAfter == null) return null;
+    return switch (sortField) {
+      case "marketPrice" -> {
+        BigDecimal value = new BigDecimal(cursor);
+        yield asc
+            ? indexData.marketPrice.gt(value).or(indexData.marketPrice.eq(value).and(indexData.id.gt(idAfter)))
+            : indexData.marketPrice.lt(value).or(indexData.marketPrice.eq(value).and(indexData.id.lt(idAfter)));
+      }
+      case "closingPrice" -> {
+        BigDecimal value = new BigDecimal(cursor);
+        yield asc
+            ? indexData.closingPrice.gt(value).or(indexData.closingPrice.eq(value).and(indexData.id.gt(idAfter)))
+            : indexData.closingPrice.lt(value).or(indexData.closingPrice.eq(value).and(indexData.id.lt(idAfter)));
+      }
+      case "highPrice" -> {
+        BigDecimal value = new BigDecimal(cursor);
+        yield asc
+            ? indexData.highPrice.gt(value).or(indexData.highPrice.eq(value).and(indexData.id.gt(idAfter)))
+            : indexData.highPrice.lt(value).or(indexData.highPrice.eq(value).and(indexData.id.lt(idAfter)));
+      }
+      case "lowPrice" -> {
+        BigDecimal value = new BigDecimal(cursor);
+        yield asc
+            ? indexData.lowPrice.gt(value).or(indexData.lowPrice.eq(value).and(indexData.id.gt(idAfter)))
+            : indexData.lowPrice.lt(value).or(indexData.lowPrice.eq(value).and(indexData.id.lt(idAfter)));
+      }
+      case "versus" -> {
+        BigDecimal value = new BigDecimal(cursor);
+        yield asc
+            ? indexData.versus.gt(value).or(indexData.versus.eq(value).and(indexData.id.gt(idAfter)))
+            : indexData.versus.lt(value).or(indexData.versus.eq(value).and(indexData.id.lt(idAfter)));
+      }
+      case "fluctuationRate" -> {
+        BigDecimal value = new BigDecimal(cursor);
+        yield asc
+            ? indexData.fluctuationRate.gt(value).or(indexData.fluctuationRate.eq(value).and(indexData.id.gt(idAfter)))
+            : indexData.fluctuationRate.lt(value).or(indexData.fluctuationRate.eq(value).and(indexData.id.lt(idAfter)));
+      }
+      case "tradingQuantity" -> {
+        Long value = Long.parseLong(cursor);
+        yield asc
+            ? indexData.tradingQuantity.gt(value).or(indexData.tradingQuantity.eq(value).and(indexData.id.gt(idAfter)))
+            : indexData.tradingQuantity.lt(value).or(indexData.tradingQuantity.eq(value).and(indexData.id.lt(idAfter)));
+      }
+      case "tradingPrice" -> {
+        BigDecimal value = new BigDecimal(cursor);
+        yield asc
+            ? indexData.tradingPrice.gt(value).or(indexData.tradingPrice.eq(value).and(indexData.id.gt(idAfter)))
+            : indexData.tradingPrice.lt(value).or(indexData.tradingPrice.eq(value).and(indexData.id.lt(idAfter)));
+      }
+      case "marketTotalAmount" -> {
+        BigDecimal value = new BigDecimal(cursor);
+        yield asc
+            ? indexData.marketTotalAmount.gt(value).or(indexData.marketTotalAmount.eq(value).and(indexData.id.gt(idAfter)))
+            : indexData.marketTotalAmount.lt(value).or(indexData.marketTotalAmount.eq(value).and(indexData.id.lt(idAfter)));
+      }
+      default -> {
+        LocalDate date = LocalDate.parse(cursor);
+        yield asc
+            ? indexData.baseDate.gt(date).or(indexData.baseDate.eq(date).and(indexData.id.gt(idAfter)))
+            : indexData.baseDate.lt(date).or(indexData.baseDate.eq(date).and(indexData.id.lt(idAfter)));
+      }
+    };
   }
 
-  private OrderSpecifier<?> getOrderSpecifier(String sortField, String sortDirection) {
-    boolean isAsc = !"desc".equalsIgnoreCase(sortDirection);
-    return switch (sortField != null ? sortField : "baseDate") {
-      case "marketPrice" -> isAsc ? indexData.marketPrice.asc() : indexData.marketPrice.desc();
-      case "closingPrice" -> isAsc ? indexData.closingPrice.asc() : indexData.closingPrice.desc();
-      case "highPrice" -> isAsc ? indexData.highPrice.asc() : indexData.highPrice.desc();
-      case "lowPrice" -> isAsc ? indexData.lowPrice.asc() : indexData.lowPrice.desc();
-      case "versus" -> isAsc ? indexData.versus.asc() : indexData.versus.desc();
-      case "fluctuationRate" -> isAsc ? indexData.fluctuationRate.asc() : indexData.fluctuationRate.desc();
-      case "tradingQuantity" -> isAsc ? indexData.tradingQuantity.asc() : indexData.tradingQuantity.desc();
-      case "tradingPrice" -> isAsc ? indexData.tradingPrice.asc() : indexData.tradingPrice.desc();
-      case "marketTotalAmount" -> isAsc ? indexData.marketTotalAmount.asc() : indexData.marketTotalAmount.desc();
-      default -> isAsc ? indexData.baseDate.asc() : indexData.baseDate.desc();
+  private OrderSpecifier<?> sortOrder(String sortField, boolean asc) {
+    return switch (sortField) {
+      case "marketPrice"      -> asc ? indexData.marketPrice.asc()      : indexData.marketPrice.desc();
+      case "closingPrice"     -> asc ? indexData.closingPrice.asc()     : indexData.closingPrice.desc();
+      case "highPrice"        -> asc ? indexData.highPrice.asc()        : indexData.highPrice.desc();
+      case "lowPrice"         -> asc ? indexData.lowPrice.asc()         : indexData.lowPrice.desc();
+      case "versus"           -> asc ? indexData.versus.asc()           : indexData.versus.desc();
+      case "fluctuationRate"  -> asc ? indexData.fluctuationRate.asc()  : indexData.fluctuationRate.desc();
+      case "tradingQuantity"  -> asc ? indexData.tradingQuantity.asc()  : indexData.tradingQuantity.desc();
+      case "tradingPrice"     -> asc ? indexData.tradingPrice.asc()     : indexData.tradingPrice.desc();
+      case "marketTotalAmount"-> asc ? indexData.marketTotalAmount.asc(): indexData.marketTotalAmount.desc();
+      default                 -> asc ? indexData.baseDate.asc()         : indexData.baseDate.desc();
+    };
+  }
+
+  private String extractCursor(String sortField, IndexData data) {
+    return switch (sortField) {
+      case "marketPrice"       -> data.getMarketPrice().toString();
+      case "closingPrice"      -> data.getClosingPrice().toString();
+      case "highPrice"         -> data.getHighPrice().toString();
+      case "lowPrice"          -> data.getLowPrice().toString();
+      case "versus"            -> data.getVersus().toString();
+      case "fluctuationRate"   -> data.getFluctuationRate().toString();
+      case "tradingQuantity"   -> data.getTradingQuantity().toString();
+      case "tradingPrice"      -> data.getTradingPrice().toString();
+      case "marketTotalAmount" -> data.getMarketTotalAmount().toString();
+      default                  -> data.getBaseDate().toString();
     };
   }
 }

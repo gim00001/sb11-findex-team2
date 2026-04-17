@@ -43,9 +43,9 @@ public class IndexDataCustomRepositoryImpl implements IndexDataCustomRepository 
             cursorCondition(sortField, request.cursor(), request.idAfter(), asc)
         )
         .orderBy(
-        sortOrder(sortField, asc),
-        asc ? indexData.id.asc() : indexData.id.desc()
-    )
+            sortOrder(sortField, asc),
+            asc ? indexData.id.asc() : indexData.id.desc()
+        )
         .limit(size + 1)
         .fetch();
 
@@ -83,70 +83,73 @@ public class IndexDataCustomRepositoryImpl implements IndexDataCustomRepository 
   private BooleanExpression cursorCondition(
       String sortField, String cursor, UUID idAfter, boolean asc) {
     if (cursor == null || idAfter == null) return null;
-    return switch (sortField) {
-      case "marketPrice" -> {
-        BigDecimal value = new BigDecimal(cursor);
-        yield asc
-            ? indexData.marketPrice.gt(value).or(indexData.marketPrice.eq(value).and(indexData.id.gt(idAfter)))
-            : indexData.marketPrice.lt(value).or(indexData.marketPrice.eq(value).and(indexData.id.lt(idAfter)));
-      }
-      case "closingPrice" -> {
-        BigDecimal value = new BigDecimal(cursor);
-        yield asc
-            ? indexData.closingPrice.gt(value).or(indexData.closingPrice.eq(value).and(indexData.id.gt(idAfter)))
-            : indexData.closingPrice.lt(value).or(indexData.closingPrice.eq(value).and(indexData.id.lt(idAfter)));
-      }
-      case "highPrice" -> {
-        BigDecimal value = new BigDecimal(cursor);
-        yield asc
-            ? indexData.highPrice.gt(value).or(indexData.highPrice.eq(value).and(indexData.id.gt(idAfter)))
-            : indexData.highPrice.lt(value).or(indexData.highPrice.eq(value).and(indexData.id.lt(idAfter)));
-      }
-      case "lowPrice" -> {
-        BigDecimal value = new BigDecimal(cursor);
-        yield asc
-            ? indexData.lowPrice.gt(value).or(indexData.lowPrice.eq(value).and(indexData.id.gt(idAfter)))
-            : indexData.lowPrice.lt(value).or(indexData.lowPrice.eq(value).and(indexData.id.lt(idAfter)));
-      }
-      case "versus" -> {
-        BigDecimal value = new BigDecimal(cursor);
-        yield asc
-            ? indexData.versus.gt(value).or(indexData.versus.eq(value).and(indexData.id.gt(idAfter)))
-            : indexData.versus.lt(value).or(indexData.versus.eq(value).and(indexData.id.lt(idAfter)));
-      }
-      case "fluctuationRate" -> {
-        BigDecimal value = new BigDecimal(cursor);
-        yield asc
-            ? indexData.fluctuationRate.gt(value).or(indexData.fluctuationRate.eq(value).and(indexData.id.gt(idAfter)))
-            : indexData.fluctuationRate.lt(value).or(indexData.fluctuationRate.eq(value).and(indexData.id.lt(idAfter)));
-      }
-      case "tradingQuantity" -> {
-        Long value = Long.parseLong(cursor);
-        yield asc
-            ? indexData.tradingQuantity.gt(value).or(indexData.tradingQuantity.eq(value).and(indexData.id.gt(idAfter)))
-            : indexData.tradingQuantity.lt(value).or(indexData.tradingQuantity.eq(value).and(indexData.id.lt(idAfter)));
-      }
-      case "tradingPrice" -> {
-        BigDecimal value = new BigDecimal(cursor);
-        yield asc
-            ? indexData.tradingPrice.gt(value).or(indexData.tradingPrice.eq(value).and(indexData.id.gt(idAfter)))
-            : indexData.tradingPrice.lt(value).or(indexData.tradingPrice.eq(value).and(indexData.id.lt(idAfter)));
-      }
-      case "marketTotalAmount" -> {
-        BigDecimal value = new BigDecimal(cursor);
-        yield asc
-            ? indexData.marketTotalAmount.gt(value).or(indexData.marketTotalAmount.eq(value).and(indexData.id.gt(idAfter)))
-            : indexData.marketTotalAmount.lt(value).or(indexData.marketTotalAmount.eq(value).and(indexData.id.lt(idAfter)));
-      }
-      default -> {
-        LocalDate date = LocalDate.parse(cursor);
-        yield asc
-            ? indexData.baseDate.gt(date).or(indexData.baseDate.eq(date).and(indexData.id.gt(idAfter)))
-            : indexData.baseDate.lt(date).or(indexData.baseDate.eq(date).and(indexData.id.lt(idAfter)));
-      }
-    };
+    try {
+      return switch (sortField) {
+        case "marketPrice" -> {
+          BigDecimal value = new BigDecimal(cursor);
+          yield asc
+              ? indexData.marketPrice.gt(value).or(indexData.marketPrice.eq(value).and(indexData.id.gt(idAfter)))
+              : indexData.marketPrice.lt(value).or(indexData.marketPrice.eq(value).and(indexData.id.lt(idAfter)));
+        }
+        case "closingPrice" -> {
+          BigDecimal value = new BigDecimal(cursor);
+          yield asc
+              ? indexData.closingPrice.gt(value).or(indexData.closingPrice.eq(value).and(indexData.id.gt(idAfter)))
+              : indexData.closingPrice.lt(value).or(indexData.closingPrice.eq(value).and(indexData.id.lt(idAfter)));
+        }
+        case "highPrice" -> {
+          BigDecimal value = new BigDecimal(cursor);
+          yield asc
+              ? indexData.highPrice.gt(value).or(indexData.highPrice.eq(value).and(indexData.id.gt(idAfter)))
+              : indexData.highPrice.lt(value).or(indexData.highPrice.eq(value).and(indexData.id.lt(idAfter)));
+        }
+        case "lowPrice" -> {
+          BigDecimal value = new BigDecimal(cursor);
+          yield asc
+              ? indexData.lowPrice.gt(value).or(indexData.lowPrice.eq(value).and(indexData.id.gt(idAfter)))
+              : indexData.lowPrice.lt(value).or(indexData.lowPrice.eq(value).and(indexData.id.lt(idAfter)));
+        }
+        case "versus" -> {
+          BigDecimal value = new BigDecimal(cursor);
+          yield asc
+              ? indexData.versus.gt(value).or(indexData.versus.eq(value).and(indexData.id.gt(idAfter)))
+              : indexData.versus.lt(value).or(indexData.versus.eq(value).and(indexData.id.lt(idAfter)));
+        }
+        case "fluctuationRate" -> {
+          BigDecimal value = new BigDecimal(cursor);
+          yield asc
+              ? indexData.fluctuationRate.gt(value).or(indexData.fluctuationRate.eq(value).and(indexData.id.gt(idAfter)))
+              : indexData.fluctuationRate.lt(value).or(indexData.fluctuationRate.eq(value).and(indexData.id.lt(idAfter)));
+        }
+        case "tradingQuantity" -> {
+          Long value = Long.parseLong(cursor);
+          yield asc
+              ? indexData.tradingQuantity.gt(value).or(indexData.tradingQuantity.eq(value).and(indexData.id.gt(idAfter)))
+              : indexData.tradingQuantity.lt(value).or(indexData.tradingQuantity.eq(value).and(indexData.id.lt(idAfter)));
+        }
+        case "tradingPrice" -> {
+          BigDecimal value = new BigDecimal(cursor);
+          yield asc
+              ? indexData.tradingPrice.gt(value).or(indexData.tradingPrice.eq(value).and(indexData.id.gt(idAfter)))
+              : indexData.tradingPrice.lt(value).or(indexData.tradingPrice.eq(value).and(indexData.id.lt(idAfter)));
+        }
+        case "marketTotalAmount" -> {
+          BigDecimal value = new BigDecimal(cursor);
+          yield asc
+              ? indexData.marketTotalAmount.gt(value).or(indexData.marketTotalAmount.eq(value).and(indexData.id.gt(idAfter)))
+              : indexData.marketTotalAmount.lt(value).or(indexData.marketTotalAmount.eq(value).and(indexData.id.lt(idAfter)));
+        }
+        default -> {
+          LocalDate date = LocalDate.parse(cursor);
+          yield asc
+              ? indexData.baseDate.gt(date).or(indexData.baseDate.eq(date).and(indexData.id.gt(idAfter)))
+              : indexData.baseDate.lt(date).or(indexData.baseDate.eq(date).and(indexData.id.lt(idAfter)));
+        }
+      };
+    } catch (NumberFormatException | java.time.format.DateTimeParseException e) {
+      throw new IllegalArgumentException("잘못된 cursor 값입니다: " + cursor);
+    }
   }
-
   private OrderSpecifier<?> sortOrder(String sortField, boolean asc) {
     return switch (sortField) {
       case "marketPrice"      -> asc ? indexData.marketPrice.asc()      : indexData.marketPrice.desc();

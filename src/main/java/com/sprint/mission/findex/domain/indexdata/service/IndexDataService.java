@@ -12,11 +12,16 @@ import com.sprint.mission.findex.domain.indexinfo.entity.SourceType;
 import com.sprint.mission.findex.domain.indexinfo.repository.IndexInfoRepository;
 import com.sprint.mission.findex.global.exception.ApiException;
 import com.sprint.mission.findex.global.exception.ApiException.ERROR;
-import jakarta.transaction.Transactional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import java.util.stream.Stream;
+import java.io.PrintWriter;
+import java.io.IOException;
+import jakarta.servlet.http.HttpServletResponse;
+import com.sprint.mission.findex.domain.indexdata.dto.IndexDataExportRequest;
 
 @Service
 @RequiredArgsConstructor
@@ -83,5 +88,42 @@ public class IndexDataService {
         .orElseThrow(() -> new ApiException(ERROR.INDEX_DATA_NOT_FOUND));
 
     indexDataRepository.delete(indexData);
+  }
+
+  @Transactional(readOnly = true)
+  public void exportCsv(IndexDataExportRequest request, HttpServletResponse response)
+    throws IOException {
+
+    response.setContentType("text/csv");
+    response.setCharacterEncoding("UTF-8");
+    response.setHeader("Content-Disposition", "attachment; filename=index-data.csv");
+
+    PrintWriter writer = response.getWriter();
+
+    writer.println("id,indexInfoId,baseDate,sourceType,marketPrice,closingPrice," +
+        "highPrice,lowPrice,versus,fluctuationRate,tradingQuantity," +
+        "tradingPrice,marketTotalAmount");
+
+    try (Stream<IndexData> stream = indexDataRepository.streamForExport(
+        request.indexInfoId(),
+        request.startDate(),
+        request.endDate()
+    )) {
+      stream.forEach(data -> writer.println(String.join(",",
+          data.getId().toString(),
+          data.getIndexInfo().getId().toString(),
+          data.getBaseDate().toString(),
+          data.getSourceType().toString(),
+          data.getMarketPrice().toString(),
+          data.getClosingPrice().toString(),
+          data.getHighPrice().toString(),
+          data.getLowPrice().toString(),
+          data.getVersus().toString(),
+          data.getFluctuationRate().toString(),
+          data.getTradingQuantity().toString(),
+          data.getMarketTotalAmount().toString()
+          )));
+    }
+    writer.flush();
   }
 }

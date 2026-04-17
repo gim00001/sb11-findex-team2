@@ -13,10 +13,14 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import com.sprint.mission.findex.domain.indexdata.dto.IndexDataExportRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 
 @RestController
 @RequestMapping("/api/index-data")
@@ -45,6 +49,11 @@ public class IndexDataController {
     return ResponseEntity.noContent().build();
   }
 
-
+  @GetMapping("/export/csv")
+  public void exportCsv(
+      @ModelAttribute IndexDataExportRequest request,
+      HttpServletResponse response) throws IOException {
+    indexDataService.exportCsv(request, response);
+  }
 
 }

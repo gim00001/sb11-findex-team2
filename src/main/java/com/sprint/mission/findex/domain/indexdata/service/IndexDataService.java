@@ -1,6 +1,7 @@
 package com.sprint.mission.findex.domain.indexdata.service;
 
 import com.sprint.mission.findex.domain.indexdata.dto.IndexDataCreateRequest;
+import com.sprint.mission.findex.domain.indexdata.dto.IndexDataListRequest;
 import com.sprint.mission.findex.domain.indexdata.dto.IndexDataResponse;
 import com.sprint.mission.findex.domain.indexdata.dto.IndexDataUpdateRequest;
 import com.sprint.mission.findex.domain.indexdata.entity.IndexData;
@@ -8,11 +9,12 @@ import com.sprint.mission.findex.domain.indexdata.mapper.IndexDataMapper;
 import com.sprint.mission.findex.domain.indexdata.repository.IndexDataRepository;
 import com.sprint.mission.findex.domain.indexinfo.entity.IndexInfo;
 import com.sprint.mission.findex.domain.indexinfo.entity.SourceType;
-
 import com.sprint.mission.findex.domain.indexinfo.repository.IndexInfoRepository;
+import com.sprint.mission.findex.global.common.dto.CursorPageResponse;
 import com.sprint.mission.findex.global.exception.ApiException;
 import com.sprint.mission.findex.global.exception.ApiException.ERROR;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
+import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -83,5 +85,21 @@ public class IndexDataService {
         .orElseThrow(() -> new ApiException(ERROR.INDEX_DATA_NOT_FOUND));
 
     indexDataRepository.delete(indexData);
+  }
+
+  @Transactional(readOnly = true)
+  public CursorPageResponse<IndexDataResponse> getList(IndexDataListRequest request) {
+    CursorPageResponse<IndexData> result = indexDataRepository.findAll(request);
+    List<IndexDataResponse> content = result.content().stream()
+        .map(indexDataMapper::toResponse)
+        .toList();
+    return CursorPageResponse.of(
+        content,
+        result.nextCursor(),
+        result.nextIdAfter(),
+        result.size(),
+        result.totalElements(),
+        result.hasNext()
+    );
   }
 }

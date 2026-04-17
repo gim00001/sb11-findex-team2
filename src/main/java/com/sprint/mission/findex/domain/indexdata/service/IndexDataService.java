@@ -19,6 +19,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +28,11 @@ public class IndexDataService {
   private final IndexDataRepository indexDataRepository;
   private final IndexInfoRepository indexInfoRepository;
   private final IndexDataMapper indexDataMapper;
+
+  private static final Set<String> VALID_SORT_FIELDS = Set.of(
+      "baseDate", "marketPrice", "closingPrice", "highPrice", "lowPrice",
+      "versus", "fluctuationRate", "tradingQuantity", "tradingPrice", "marketTotalAmount"
+  );
 
   @Transactional
   public IndexDataResponse create(IndexDataCreateRequest request) {
@@ -96,6 +102,12 @@ public class IndexDataService {
     if ((request.cursor() == null) != (request.idAfter() == null)) {
       throw new ApiException(ERROR.COMMON_INVALID_REQUEST);
     }
+
+    String sortField = request.sortField() != null ? request.sortField() : "baseDate";
+    if (!VALID_SORT_FIELDS.contains(sortField)) {
+      throw new ApiException(ERROR.COMMON_INVALID_REQUEST);
+    }
+    
     CursorPageResponse<IndexData> result = indexDataRepository.findAll(request);
     List<IndexDataResponse> content = result.content().stream()
         .map(indexDataMapper::toResponse)

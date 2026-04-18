@@ -24,6 +24,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Service
 @RequiredArgsConstructor
@@ -119,7 +121,8 @@ public class IndexDataService {
 
     response.setContentType("text/csv");
     response.setCharacterEncoding("UTF-8");
-    response.setHeader("Content-Disposition", "attachment; filename=index-data.csv");
+    String filename = "index-data-" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss")) + ".csv";
+    response.setHeader("Content-Disposition", "attachment; filename=" + filename);
 
     PrintWriter writer = response.getWriter();
 

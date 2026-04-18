@@ -1,6 +1,7 @@
 package com.sprint.mission.findex.domain.indexdata.repository;
 
 import com.sprint.mission.findex.domain.indexdata.entity.IndexData;
+import com.sprint.mission.findex.domain.indexdata.repository.querydsl.IndexDataCustomRepository;
 import com.sprint.mission.findex.domain.indexinfo.entity.IndexInfo;
 import jakarta.persistence.QueryHint;
 import java.time.LocalDate;
@@ -13,7 +14,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.QueryHints;
 import org.springframework.data.repository.query.Param;
 
-public interface IndexDataRepository extends JpaRepository<IndexData, UUID> {
+public interface IndexDataRepository extends JpaRepository<IndexData, UUID>,
+    IndexDataCustomRepository {
 
   boolean existsByIndexInfoAndBaseDate(IndexInfo indexInfo, LocalDate baseDate);
 

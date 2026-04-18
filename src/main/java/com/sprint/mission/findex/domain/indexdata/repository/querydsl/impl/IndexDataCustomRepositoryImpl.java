@@ -3,8 +3,7 @@ package com.sprint.mission.findex.domain.indexdata.repository.querydsl.impl;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.sprint.mission.findex.domain.indexdata.dto.IndexDataListRequest;
-import com.sprint.mission.findex.domain.indexdata.entity.IndexData;
+import com.sprint.mission.findex.domain.indexdata.dto.IndexDataQueryCondition;
 import com.sprint.mission.findex.domain.indexdata.entity.QIndexData;
 import com.sprint.mission.findex.domain.indexdata.repository.querydsl.IndexDataCustomRepository;
 import com.sprint.mission.findex.global.common.dto.CursorPageResponse;
@@ -14,6 +13,8 @@ import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+import com.querydsl.core.types.Projections;
+import com.sprint.mission.findex.domain.indexdata.dto.IndexDataResponse;
 
 @Repository
 @RequiredArgsConstructor
@@ -26,7 +27,7 @@ public class IndexDataCustomRepositoryImpl implements IndexDataCustomRepository 
   private final QIndexData indexData = QIndexData.indexData;
 
   @Override
-  public CursorPageResponse<IndexData> findAll(IndexDataListRequest request) {
+  public CursorPageResponse<IndexDataResponse> findAll(IndexDataQueryCondition request) {
     int size = (request.size() != null && request.size() > 0)
         ? Math.min(request.size(), MAX_PAGE_SIZE)
         : DEFAULT_PAGE_SIZE;
@@ -34,8 +35,23 @@ public class IndexDataCustomRepositoryImpl implements IndexDataCustomRepository 
     boolean asc = !"desc".equalsIgnoreCase(request.sortDirection());
     String sortField = request.sortField() != null ? request.sortField() : "baseDate";
 
-    List<IndexData> content = queryFactory
-        .selectFrom(indexData)
+    List<IndexDataResponse> content = queryFactory
+        .select(Projections.constructor(IndexDataResponse.class,
+            indexData.id,
+            indexData.indexInfo.id,
+            indexData.baseDate,
+            indexData.sourceType,
+            indexData.marketPrice,
+            indexData.closingPrice,
+            indexData.highPrice,
+            indexData.lowPrice,
+            indexData.versus,
+            indexData.fluctuationRate,
+            indexData.tradingQuantity,
+            indexData.tradingPrice,
+            indexData.marketTotalAmount
+        ))
+        .from(indexData)
         .where(
             eqIndexInfoId(request.indexInfoId()),
             goeStartDate(request.startDate()),
@@ -50,10 +66,9 @@ public class IndexDataCustomRepositoryImpl implements IndexDataCustomRepository 
         .fetch();
 
     boolean hasNext = content.size() > size;
-    List<IndexData> result = hasNext ? content.subList(0, size) : content;
-
+    List<IndexDataResponse> result = hasNext ? content.subList(0, size) : content;
     String nextCursor = hasNext ? extractCursor(sortField, result.get(result.size() - 1)) : null;
-    UUID nextIdAfter = hasNext ? result.get(result.size() - 1).getId() : null;
+    UUID nextIdAfter = hasNext ? result.get(result.size() - 1).id() : null;
 
     Long totalElements = queryFactory
         .select(indexData.count())
@@ -165,18 +180,18 @@ public class IndexDataCustomRepositoryImpl implements IndexDataCustomRepository 
     };
   }
 
-  private String extractCursor(String sortField, IndexData data) {
+  private String extractCursor(String sortField, IndexDataResponse data) {
     return switch (sortField) {
-      case "marketPrice"       -> data.getMarketPrice().toString();
-      case "closingPrice"      -> data.getClosingPrice().toString();
-      case "highPrice"         -> data.getHighPrice().toString();
-      case "lowPrice"          -> data.getLowPrice().toString();
-      case "versus"            -> data.getVersus().toString();
-      case "fluctuationRate"   -> data.getFluctuationRate().toString();
-      case "tradingQuantity"   -> data.getTradingQuantity().toString();
-      case "tradingPrice"      -> data.getTradingPrice().toString();
-      case "marketTotalAmount" -> data.getMarketTotalAmount().toString();
-      default                  -> data.getBaseDate().toString();
+      case "marketPrice"       -> data.marketPrice().toString();
+      case "closingPrice"      -> data.closingPrice().toString();
+      case "highPrice"         -> data.highPrice().toString();
+      case "lowPrice"          -> data.lowPrice().toString();
+      case "versus"            -> data.versus().toString();
+      case "fluctuationRate"   -> data.fluctuationRate().toString();
+      case "tradingQuantity"   -> data.tradingQuantity().toString();
+      case "tradingPrice"      -> data.tradingPrice().toString();
+      case "marketTotalAmount" -> data.marketTotalAmount().toString();
+      default                  -> data.baseDate().toString();
     };
   }
 }

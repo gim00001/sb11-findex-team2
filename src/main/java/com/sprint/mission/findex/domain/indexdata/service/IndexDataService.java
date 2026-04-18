@@ -1,7 +1,7 @@
 package com.sprint.mission.findex.domain.indexdata.service;
 
 import com.sprint.mission.findex.domain.indexdata.dto.IndexDataCreateRequest;
-import com.sprint.mission.findex.domain.indexdata.dto.IndexDataListRequest;
+import com.sprint.mission.findex.domain.indexdata.dto.IndexDataQueryCondition;
 import com.sprint.mission.findex.domain.indexdata.dto.IndexDataResponse;
 import com.sprint.mission.findex.domain.indexdata.dto.IndexDataUpdateRequest;
 import com.sprint.mission.findex.domain.indexdata.entity.IndexData;
@@ -94,7 +94,7 @@ public class IndexDataService {
   }
 
   @Transactional(readOnly = true)
-  public CursorPageResponse<IndexDataResponse> getList(IndexDataListRequest request) {
+  public CursorPageResponse<IndexDataResponse> getList(IndexDataQueryCondition request) {
     if (request.startDate() != null && request.endDate() != null
         && request.startDate().isAfter(request.endDate())) {
       throw new ApiException(ERROR.COMMON_INVALID_REQUEST);
@@ -107,7 +107,7 @@ public class IndexDataService {
     if (!VALID_SORT_FIELDS.contains(sortField)) {
       throw new ApiException(ERROR.COMMON_INVALID_REQUEST);
     }
-    
+
     CursorPageResponse<IndexData> result = indexDataRepository.findAll(request);
     List<IndexDataResponse> content = result.content().stream()
         .map(indexDataMapper::toResponse)

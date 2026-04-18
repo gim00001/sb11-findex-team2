@@ -3,7 +3,7 @@ package com.sprint.mission.findex.domain.indexdata.dto;
 import java.time.LocalDate;
 import java.util.UUID;
 
-public record IndexDataListRequest(
+public record IndexDataQueryCondition(
     UUID indexInfoId,
     LocalDate startDate,
     LocalDate endDate,
@@ -13,7 +13,7 @@ public record IndexDataListRequest(
     String sortDirection,
     Integer size
 ) {
-  public IndexDataListRequest {
+  public IndexDataQueryCondition {
     if (sortField == null) sortField = "baseDate";
     if (sortDirection == null) sortDirection = "desc";
     if (size == null) size = 10;

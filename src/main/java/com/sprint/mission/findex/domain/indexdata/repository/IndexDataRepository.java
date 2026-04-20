@@ -35,5 +35,5 @@ public interface IndexDataRepository extends JpaRepository<IndexData, UUID>,
       @Param("indexInfoId") UUID indexInfoId,
       @Param("startDate") LocalDate startDate,
       @Param("endDate") LocalDate endDate
-  );;
+  );
 }

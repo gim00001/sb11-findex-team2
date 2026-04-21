@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import java.time.LocalDate;
+import java.util.Set;
 import java.util.UUID;
 
 @Schema(description = "지수 데이터 목록 조회 조건")
@@ -35,9 +36,25 @@ public record IndexDataQueryCondition(
     Integer size
 
 ) {
+
+  private static final Set<String> VALID_SORT_FIELDS =Set.of(
+      "baseDate", "marketPrice", "closingPrice", "highPrice", "lowPrice",
+      "versus", "fluctuationRate", "tradingQuantity", "tradingPrice", "marketTotalAmount"
+  );
+
   public IndexDataQueryCondition {
     if (sortField == null) sortField = "baseDate";
     if (sortDirection == null) sortDirection = "desc";
     if (size == null) size = 10;
+
+    if (startDate != null && endDate != null && startDate.isAfter(endDate)){
+      throw new IllegalArgumentException("시작일은 종료일보다 미래일 수 없습니다.");
+    }
+    if ((cursor == null) != (idAfter == null)) {
+      throw new IllegalArgumentException("cursor와 idAfter는 함께 사용해야 합니다.");
+    }
+    if (!VALID_SORT_FIELDS.contains(sortField)) {
+      throw new IllegalArgumentException("지원하지 않는 정렬 필드입니다." + sortField);
+    }
   }
 }

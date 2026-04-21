@@ -122,7 +122,7 @@ public class IndexDataService {
     response.setContentType("text/csv; charset=UTF-8");
     response.setCharacterEncoding("UTF-8");
     String filename = "index-data-" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss")) + ".csv";
-    response.setHeader("Content-Disposition", "attachment; filename=" + filename);
+    response.setHeader("Content-Disposition", "attachment; filename=" + filename + "\"");
 
     PrintWriter writer = response.getWriter();
     writer.print('\uFEFF');

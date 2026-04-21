@@ -122,8 +122,7 @@ public class IndexDataService {
     response.setContentType("text/csv; charset=UTF-8");
     response.setCharacterEncoding("UTF-8");
     String filename = "index-data-" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss")) + ".csv";
-    response.setHeader("Content-Disposition", "attachment; filename=" + filename + "\"");
-
+    response.setHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
     PrintWriter writer = response.getWriter();
     writer.print('\uFEFF');
 
@@ -135,20 +134,35 @@ public class IndexDataService {
         request.endDate()
     )) {
       stream.forEach(data -> writer.println(String.join(",",
-          data.getBaseDate().toString(),
-          data.getIndexInfo().getIndexClassification(),
-          data.getIndexInfo().getIndexName(),
-          data.getMarketPrice().toString(),
-          data.getClosingPrice().toString(),
-          data.getHighPrice().toString(),
-          data.getLowPrice().toString(),
-          data.getVersus().toString(),
-          data.getFluctuationRate().toString(),
-          data.getTradingQuantity().toString(),
-          data.getTradingPrice().toString(),
-          data.getMarketTotalAmount().toString()
+          csvCell(data.getBaseDate().toString()),
+          csvCell(data.getIndexInfo().getIndexClassification()),
+          csvCell(data.getIndexInfo().getIndexName()),
+          csvCell(data.getMarketPrice().toString()),
+          csvCell(data.getClosingPrice().toString()),
+          csvCell(data.getHighPrice().toString()),
+          csvCell(data.getLowPrice().toString()),
+          csvCell(data.getVersus().toString()),
+          csvCell(data.getFluctuationRate().toString()),
+          csvCell(data.getTradingQuantity().toString()),
+          csvCell(data.getTradingPrice().toString()),
+          csvCell(data.getMarketTotalAmount().toString())
       )));
     }
     writer.flush();
+  }
+
+  private static String csvCell(String raw) {
+    if (raw == null) return "";
+    String safe = raw;
+    if (!safe.isEmpty() && "=+-@".indexOf(safe.charAt(0)) >= 0) {
+      safe = "'" + safe;
+    }
+    if (safe.contains("\"")) {
+      safe = safe.replace("\"", "\"\"");
+    }
+    if (safe.contains(",") || safe.contains("\n") || safe.contains("\r") || safe.contains("\"")) {
+      return "\"" + safe + "\"";
+    }
+    return safe;
   }
 }

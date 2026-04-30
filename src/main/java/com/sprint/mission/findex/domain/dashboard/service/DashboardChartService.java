@@ -17,17 +17,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-@Service
-@RequiredArgsConstructor
 @Transactional(readOnly = true)
+@RequiredArgsConstructor
+@Service
 public class DashboardChartService {
 
   private final IndexInfoRepository indexInfoRepository;
   private final IndexDataRepository indexDataRepository;
 
+  @Cacheable(cacheNames = "indexChart", key = "#id + '_' + #periodType")
   public IndexChartResponse getIndexChart(
       UUID id,
       IndexChartPeriodType periodType

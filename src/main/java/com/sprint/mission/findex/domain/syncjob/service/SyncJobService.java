@@ -31,6 +31,8 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -55,6 +57,7 @@ public class SyncJobService {
   private int fallbackLimitDays;
 
   private final IndexDataSyncProcessor indexDataSyncProcessor;
+  private final CacheManager cacheManager;
 
   public List<SyncJobResponse> syncIndexInfos(LocalDate targetDate, String workerIp) {
     List<IndexDataApiResponse> responses = List.of();
@@ -136,8 +139,10 @@ public class SyncJobService {
         }
       }
     }
+    evictIndexInfoCaches();
     return results;
   }
+
   public List<SyncJobResponse> syncIndexData(List<String> indexInfoIds, LocalDate baseDateFrom, LocalDate baseDateTo, String workerIp) {
 
     if (baseDateFrom.isAfter(baseDateTo)) {
@@ -226,6 +231,7 @@ public class SyncJobService {
         }
       }
     }
+    evictIndexDataCaches();
     return results;
   }
 
@@ -234,6 +240,26 @@ public class SyncJobService {
     return syncJobRepository.searchSyncJobPage(
         condition, condition.cursor(), condition.idAfter(),
         condition.sortField(), condition.sortDirection(), condition.size());
+  }
+
+  private void evictIndexInfoCaches() {
+    List.of("indexInfoSummaries", "indexChart", "performanceRank", "favoritePerformance")
+        .forEach(name -> {
+          Cache cache = cacheManager.getCache(name);
+          if (cache != null) {
+            cache.clear();
+          }
+        });
+  }
+
+  private void evictIndexDataCaches() {
+    List.of("indexChart", "performanceRank", "favoritePerformance")
+        .forEach(name -> {
+          Cache cache = cacheManager.getCache(name);
+          if (cache != null) {
+            cache.clear();
+          }
+        });
   }
 
   private void trySaveIndexData(IndexDataApiResponse response, IndexInfo indexInfo, LocalDate targetDate, String workerIp) {

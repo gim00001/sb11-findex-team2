@@ -19,6 +19,8 @@ import com.sprint.mission.findex.global.exception.ApiException;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,6 +35,7 @@ public class IndexInfoService {
 
   private final IndexInfoMapper mapper;
 
+  @CacheEvict(cacheNames = "indexInfoSummaries", allEntries = true)
   @Transactional
   public IndexInfoResponse createByUser(IndexInfoCreateRequest req) {
     IndexInfo indexInfo = create(req, SourceType.USER);
@@ -44,6 +47,7 @@ public class IndexInfoService {
     return create(req, SourceType.OPEN_API);
   }
 
+  @CacheEvict(cacheNames = "indexInfoSummaries", allEntries = true)
   @Transactional
   public IndexInfoResponse updateByUser(UUID id, IndexInfoUpdateRequest req) {
     IndexInfo indexInfo = findByIdOrThrow(id);
@@ -67,6 +71,7 @@ public class IndexInfoService {
     return indexInfo;
   }
 
+  @CacheEvict(cacheNames = "indexInfoSummaries", allEntries = true)
   @Transactional
   public void delete(UUID id) {
     IndexInfo indexInfo = findByIdOrThrow(id);
@@ -77,6 +82,7 @@ public class IndexInfoService {
     return indexInfoRepository.findIndexInfos(condition);
   }
 
+  @Cacheable("indexInfoSummaries")
   public List<IndexInfoSummaryResponse> getSummaries() {
     return this.indexInfoRepository.findIndexInfoSummaries();
   }

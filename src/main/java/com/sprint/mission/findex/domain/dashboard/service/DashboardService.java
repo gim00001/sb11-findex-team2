@@ -18,6 +18,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,6 +29,7 @@ public class DashboardService {
 
   private final IndexDataRepository indexDataRepository;
 
+  @Cacheable(cacheNames = "performanceRank", key = "#condition.periodType + '_' + #condition.limit + '_' + #condition.indexInfoId")
   public List<RankedIndexPerformanceResponse> getIndexPerformanceRank(
       RankedIndexPerformanceQueryCondition condition) {
 

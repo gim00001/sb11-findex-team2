@@ -1,15 +1,17 @@
 package com.sprint.mission.findex.domain.dashboard.service;
 
-import com.sprint.mission.findex.domain.dashboard.dto.IndexPerformanceResponse;
+import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.mapping;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
+
 import com.sprint.mission.findex.domain.dashboard.dto.IndexPerformancePeriodType;
+import com.sprint.mission.findex.domain.dashboard.dto.IndexPerformanceResponse;
 import com.sprint.mission.findex.domain.indexdata.entity.IndexData;
 import com.sprint.mission.findex.domain.indexdata.repository.IndexDataRepository;
 import com.sprint.mission.findex.domain.indexinfo.entity.IndexInfo;
 import com.sprint.mission.findex.domain.indexinfo.repository.IndexInfoRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
@@ -18,12 +20,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-
-import static java.util.function.Function.identity;
-import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.mapping;
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
+import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -33,6 +33,7 @@ public class DashboardPerformanceService {
     private final IndexInfoRepository indexInfoRepository;
     private final IndexDataRepository indexDataRepository;
 
+    @Cacheable(cacheNames = "favoritePerformance", key = "#periodType")
     public List<IndexPerformanceResponse> getFavoriteIndexPerformance(
             IndexPerformancePeriodType periodType
     ) {

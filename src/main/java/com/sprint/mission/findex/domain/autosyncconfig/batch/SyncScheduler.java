@@ -5,14 +5,16 @@ import com.sprint.mission.findex.domain.autosyncconfig.service.SyncBatchService;
 import com.sprint.mission.findex.domain.indexinfo.entity.IndexInfo;
 import com.sprint.mission.findex.domain.syncclient.client.KrxOpenApiClient;
 import com.sprint.mission.findex.domain.syncclient.dto.IndexDataApiResponse;
+import jakarta.annotation.PostConstruct;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -28,6 +30,7 @@ public class SyncScheduler {
 
   private final KrxOpenApiClient krxOpenApiClient;
   private final SyncBatchService syncBatchService;
+  private final CacheManager cacheManager;
 
   @PostConstruct
   public void validateDefaultSyncDays() {
@@ -59,6 +62,17 @@ public class SyncScheduler {
     }
 
     log.info("자동 연동 배치 완료");
+    evictIndexDataCaches();
+  }
+
+  private void evictIndexDataCaches() {
+    List.of("indexChart", "performanceRank", "favoritePerformance")
+        .forEach(name -> {
+          Cache cache = cacheManager.getCache(name);
+          if (cache != null) {
+            cache.clear();
+          }
+        });
   }
 
   private void syncForIndexInfo(IndexInfo indexInfo, LocalDate to) {

@@ -16,18 +16,20 @@ import com.sprint.mission.findex.global.exception.ApiException;
 import com.sprint.mission.findex.global.exception.ApiException.ERROR;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Iterator;
 import java.util.UUID;
 import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.io.OutputStreamWriter;
-import java.nio.charset.StandardCharsets;
-import java.util.Iterator;
 
 @Service
 @RequiredArgsConstructor
@@ -37,6 +39,11 @@ public class IndexDataService {
   private final IndexInfoRepository indexInfoRepository;
   private final IndexDataMapper indexDataMapper;
 
+  @Caching(evict = {
+      @CacheEvict(cacheNames = "favoritePerformance", allEntries = true),
+      @CacheEvict(cacheNames = "indexChart", allEntries = true),
+      @CacheEvict(cacheNames = "performanceRank", allEntries = true)
+})
   @Transactional
   public IndexDataResponse create(IndexDataCreateRequest request) {
     IndexInfo indexInfo = indexInfoRepository.findById(request.indexInfoId())
@@ -68,6 +75,11 @@ public class IndexDataService {
     }
   }
 
+  @Caching(evict = {
+      @CacheEvict(cacheNames = "favoritePerformance", allEntries = true),
+      @CacheEvict(cacheNames = "indexChart", allEntries = true),
+      @CacheEvict(cacheNames = "performanceRank", allEntries = true)
+  })
   @Transactional
   public IndexDataResponse update(UUID id, IndexDataUpdateRequest request) {
     IndexData indexData = indexDataRepository.findById(id)
@@ -88,6 +100,11 @@ public class IndexDataService {
     return indexDataMapper.toResponse(indexData);
   }
 
+  @Caching(evict = {
+      @CacheEvict(cacheNames = "favoritePerformance", allEntries = true),
+      @CacheEvict(cacheNames = "indexChart", allEntries = true),
+      @CacheEvict(cacheNames = "performanceRank", allEntries = true)
+  })
   @Transactional
   public void delete(UUID id) {
     IndexData indexData = indexDataRepository.findById(id)

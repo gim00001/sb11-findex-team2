@@ -25,10 +25,10 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-@Service
-@RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class DashboardPerformanceService {
+@RequiredArgsConstructor
+@Service
+public class DashboardFavoriteService {
 
     private final IndexInfoRepository indexInfoRepository;
     private final IndexDataRepository indexDataRepository;

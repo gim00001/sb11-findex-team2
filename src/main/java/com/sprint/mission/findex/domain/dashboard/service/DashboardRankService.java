@@ -25,7 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 @Service
-public class DashboardService {
+public class DashboardRankService {
 
   private final IndexDataRepository indexDataRepository;
 

@@ -7,7 +7,6 @@ import com.sprint.mission.findex.domain.indexinfo.entity.IndexInfo;
 import jakarta.persistence.QueryHint;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -20,20 +19,9 @@ public interface IndexDataRepository extends JpaRepository<IndexData, UUID>,
 
   boolean existsByIndexInfoAndBaseDate(IndexInfo indexInfo, LocalDate baseDate);
 
-  Optional<IndexData> findByIndexInfoAndBaseDate(IndexInfo indexInfo, LocalDate baseDate);
-
   List<IndexData> findByIndexInfoIdAndBaseDateBetween(UUID indexInfoId, LocalDate from, LocalDate to);
 
   List<IndexData> findByIndexInfoIdAndBaseDateBetweenOrderByBaseDateAsc(UUID indexInfoId, LocalDate from, LocalDate to);
-
-  List<IndexData> findByBaseDateBetween(LocalDate from, LocalDate to);
-
-  Optional<IndexData> findFirstByIndexInfoIdOrderByBaseDateDesc(UUID indexInfoId);
-
-  Optional<IndexData> findFirstByIndexInfoIdAndBaseDateLessThanEqualOrderByBaseDateDesc(
-      UUID indexInfoId,
-      LocalDate baseDate
-  );
 
   @Query("""
       select d

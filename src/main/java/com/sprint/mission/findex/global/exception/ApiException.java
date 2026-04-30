@@ -27,8 +27,11 @@ public class ApiException extends RuntimeException {
     INVALID_SORT_FIELD("AUTO_SYNC_002", "유효하지 않은 정렬 필드입니다.", HttpStatus.BAD_REQUEST),
 
     // Common
-    COMMON_INVALID_REQUEST("COMMON_001", "잘못된 요청입니다.", HttpStatus.BAD_REQUEST),
-    COMMON_UNEXPECTED_ERROR("COMMON_002", "예기치 않은 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
+    COMMON_UNEXPECTED_ERROR("COMMON_001", "예기치 않은 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
+    COMMON_NOT_FOUND("COMMON_002", "요청한 리소스를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    COMMON_METHOD_NOT_ALLOWED("COMMON_003", "지원하지 않는 HTTP 메서드입니다.", HttpStatus.METHOD_NOT_ALLOWED),
+    COMMON_MESSAGE_NOT_READABLE("COMMON_004", "잘못된 요청 형식입니다.", HttpStatus.BAD_REQUEST),
+    COMMON_INVALID_REQUEST("COMMON_005", "잘못된 요청입니다.", HttpStatus.BAD_REQUEST);
 
 
 
